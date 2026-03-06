@@ -7,18 +7,31 @@ services:
     container_name: hrms_postgres
     restart: always
     environment:
-      POSTGRES_DB: test
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: hrms_db
+      POSTGRES_USER: hrms_user
+      POSTGRES_PASSWORD: hrms_password
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - hrms_net
 
   backend:
     build: .
+    environment:
+      DB_ENGINE: django.db.backends.postgresql
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: hrms_db
+      DB_USER: hrms_user
+      DB_PASSWORD: hrms_password
     volumes:
       - .:/app
-    expose:
-      - "8000"
+    networks:
+      - hrms_net
+    ports:
+      - "8000:8000"
     depends_on:
       - db
 
@@ -31,6 +44,11 @@ services:
       - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
     depends_on:
       - backend
+    networks:
+      - hrms_net
 
 volumes:
   postgres_data:
+
+networks:
+  hrms_net:
